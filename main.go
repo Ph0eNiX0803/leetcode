@@ -76,19 +76,22 @@ func main() {
 		log.Printf("获取每日一题发生错误: %v\n", err)
 		return
 	}
-
-	// 获取每日一题，如果有则推送即可
-	respAll, err := api.GetALLQuestionsV2()
-	if err != nil {
-		log.Printf("获取每日一题发生错误: %v\n", err)
-		return
+	qs := []api.QuestionLightNode{}
+	batchSize := 100
+	for i := 0; i < 200; i += batchSize {
+		respAll, err := api.GetALLQuestionsV2(fmt.Sprint(i), fmt.Sprint(batchSize))
+		if err != nil {
+			log.Printf("api.GetALLQuestionsV2 %v\n", err)
+			return
+		}
+		qs = append(qs, respAll.Data.P.Questions...)
 	}
 
 	if len(resp.TodayRecord) <= 0 {
 		log.Printf("todayRecord 长度为 0,请检查\n")
 		return
 	}
-	if len(respAll.Data.P.Questions) <= 0 {
+	if len(qs) <= 0 {
 		log.Printf("todayRecord 长度为 0,请检查\n")
 		return
 	}
@@ -96,8 +99,8 @@ func main() {
 	today := resp.TodayRecord[0]
 	date := today.Date
 	for i := 0; i < 3; i++ {
-		index := rand.Uint32() % 100
-		q := respAll.Data.P.Questions[index]
+		index := rand.Uint32() % 200
+		q := qs[index]
 		diff := q.Difficulty
 		title := q.TitleCn
 		link := fmt.Sprintf("%s/problems/%s", api.Leetcode, q.TitleSlug)

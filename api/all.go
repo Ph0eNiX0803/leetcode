@@ -34,11 +34,11 @@ func GetALLQuestions(ctx context.Context) (*problemsetQuestionList, error) {
 	return &resp, nil
 }
 
-func GetALLQuestionsV2() (*Data, error) {
+func GetALLQuestionsV2(offset, length string) (*Data, error) {
 	url := "https://leetcode.cn/graphql/"
 	method := "POST"
 
-	payload := strings.NewReader(`{"query":"\n    query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {\n  problemsetQuestionList(\n    categorySlug: $categorySlug\n    limit: $limit\n    skip: $skip\n    filters: $filters\n  ) {\n    hasMore\n    total\n    questions {\n      acRate\n      difficulty\n      freqBar\n      frontendQuestionId\n      isFavor\n      paidOnly\n      solutionNum\n      status\n      title\n      titleCn\n      titleSlug\n      topicTags {\n        name\n        nameTranslated\n        id\n        slug\n      }\n      extra {\n        hasVideoSolution\n        topCompanyTags {\n          imgUrl\n          slug\n          numSubscribed\n        }\n      }\n    }\n  }\n}\n    ","variables":{"categorySlug":"all-code-essentials","skip":0,"limit":200,"filters":{}},"operationName":"problemsetQuestionList"}`)
+	payload := strings.NewReader(fmt.Sprintf("{\"query\":\"\\n    query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {\\n  problemsetQuestionList(\\n    categorySlug: $categorySlug\\n    limit: $limit\\n    skip: $skip\\n    filters: $filters\\n  ) {\\n    hasMore\\n    total\\n    questions {\\n      acRate\\n      difficulty\\n      freqBar\\n      frontendQuestionId\\n      isFavor\\n      paidOnly\\n      solutionNum\\n      status\\n      title\\n      titleCn\\n      titleSlug\\n      topicTags {\\n        name\\n        nameTranslated\\n        id\\n        slug\\n      }\\n      extra {\\n        hasVideoSolution\\n        topCompanyTags {\\n          imgUrl\\n          slug\\n          numSubscribed\\n        }\\n      }\\n    }\\n  }\\n}\\n    \",\"variables\":{\"categorySlug\":\"all-code-essentials\",\"skip\":%s,\"limit\":%s,\"filters\":{}},\"operationName\":\"problemsetQuestionList\"}", offset, length))
 
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, payload)
