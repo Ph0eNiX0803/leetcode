@@ -11,12 +11,16 @@ import (
 	"github.com/machinebox/graphql"
 )
 
-func GetALLQuestions(ctx context.Context) (*problemsetQuestionList, error) {
+func GetALLQuestions(offset, length int) (*QuestionTodayResponse, error) {
 	// create a client (safe to share across requests)
 	client := graphql.NewClient("https://leetcode.cn/graphql/")
 
 	// make a request
 	req := graphql.NewRequest(QuestionsQuery)
+	req.Var("categorySlug", "all-code-essentials")
+	req.Var("limit", length)
+	req.Var("skip", offset)
+	//req.Var("$filters", "{}")
 
 	// set header fields
 	req.Header.Set("Cache-Control", "no-cache")
@@ -26,19 +30,19 @@ func GetALLQuestions(ctx context.Context) (*problemsetQuestionList, error) {
 	req.Header.Set("origin", "https://leetcode.cn")
 
 	// run it and capture the response
-	var resp problemsetQuestionList
-	if err := client.Run(ctx, req, &resp); err != nil {
+	var resp QuestionTodayResponse
+	if err := client.Run(context.Background(), req, &resp); err != nil {
 		return nil, err
 	}
 
 	return &resp, nil
 }
 
-func GetALLQuestionsV2(offset, length string) (*Data, error) {
+func GetALLQuestionsV2(offset, length int) (*QuestionTodayResponse, error) {
 	url := "https://leetcode.cn/graphql/"
 	method := "POST"
 
-	payload := strings.NewReader(fmt.Sprintf("{\"query\":\"\\n    query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {\\n  problemsetQuestionList(\\n    categorySlug: $categorySlug\\n    limit: $limit\\n    skip: $skip\\n    filters: $filters\\n  ) {\\n    hasMore\\n    total\\n    questions {\\n      acRate\\n      difficulty\\n      freqBar\\n      frontendQuestionId\\n      isFavor\\n      paidOnly\\n      solutionNum\\n      status\\n      title\\n      titleCn\\n      titleSlug\\n      topicTags {\\n        name\\n        nameTranslated\\n        id\\n        slug\\n      }\\n      extra {\\n        hasVideoSolution\\n        topCompanyTags {\\n          imgUrl\\n          slug\\n          numSubscribed\\n        }\\n      }\\n    }\\n  }\\n}\\n    \",\"variables\":{\"categorySlug\":\"all-code-essentials\",\"skip\":%s,\"limit\":%s,\"filters\":{}},\"operationName\":\"problemsetQuestionList\"}", offset, length))
+	payload := strings.NewReader(fmt.Sprintf("{\"query\":\"\\n    query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {\\n  problemsetQuestionList(\\n    categorySlug: $categorySlug\\n    limit: $limit\\n    skip: $skip\\n    filters: $filters\\n  ) {\\n    hasMore\\n    total\\n    questions {\\n      acRate\\n      difficulty\\n      freqBar\\n      frontendQuestionId\\n      isFavor\\n      paidOnly\\n      solutionNum\\n      status\\n      title\\n      titleCn\\n      titleSlug\\n      topicTags {\\n        name\\n        nameTranslated\\n        id\\n        slug\\n      }\\n      extra {\\n        hasVideoSolution\\n        topCompanyTags {\\n          imgUrl\\n          slug\\n          numSubscribed\\n        }\\n      }\\n    }\\n  }\\n}\\n    \",\"variables\":{\"categorySlug\":\"all-code-essentials\",\"skip\":%d,\"limit\":%d,\"filters\":{}},\"operationName\":\"problemsetQuestionList\"}", offset, length))
 
 	client := &http.Client{}
 	req, err := http.NewRequest(method, url, payload)
@@ -79,5 +83,5 @@ func GetALLQuestionsV2(offset, length string) (*Data, error) {
 		return nil, err
 	}
 
-	return &resp, nil
+	return &resp.Data, nil
 }
