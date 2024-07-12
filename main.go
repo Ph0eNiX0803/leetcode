@@ -32,6 +32,7 @@ import (
 	"math/rand"
 	"os"
 	"strings"
+	"time"
 
 	"leetcode-question-today/api"
 	"leetcode-question-today/msgpush"
@@ -111,7 +112,7 @@ func main() {
 	today := resp.TodayRecord[0]
 	date := today.Date
 	for i := 0; i < 3; i++ {
-		index := rand.Uint32() % uint32(len(filter))
+		index := rand.New(rand.NewSource(time.Now().UnixNano())).Int() % len(filter)
 		q := filter[index]
 		diff := q.Difficulty
 		title := q.TitleCn
