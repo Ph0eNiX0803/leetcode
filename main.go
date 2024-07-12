@@ -34,6 +34,8 @@ import (
 	"strings"
 	"time"
 
+	md "github.com/JohannesKaufmann/html-to-markdown"
+
 	"leetcode-question-today/api"
 	"leetcode-question-today/msgpush"
 )
@@ -98,12 +100,12 @@ func main() {
 		}
 		qs = append(qs, respAll.P.Questions...)
 	}
-	filter := filterPaid(qs)
+	qs = filterPaid(qs)
 	if len(resp.TodayRecord) <= 0 {
 		log.Printf("todayRecord 长度为 0,请检查\n")
 		return
 	}
-	if len(filter) <= 0 {
+	if len(qs) <= 0 {
 		log.Printf("filter 长度为 0,请检查\n")
 		return
 	}
@@ -112,8 +114,8 @@ func main() {
 	today := resp.TodayRecord[0]
 	date := today.Date
 	for i := 0; i < 3; i++ {
-		index := rand.New(rand.NewSource(time.Now().UnixNano())).Int() % len(filter)
-		q := filter[index]
+		index := rand.New(rand.NewSource(time.Now().UnixNano())).Int() % len(qs)
+		q := qs[index]
 		diff := q.Difficulty
 		title := q.TitleCn
 		link := fmt.Sprintf("%s/problems/%s", api.Leetcode, q.TitleSlug)
@@ -165,4 +167,13 @@ func filterPaid(in []api.QuestionLightNode) (out []api.QuestionLightNode) {
 	}
 
 	return
+}
+
+func Html2Markdown(html string) string {
+	converter := md.NewConverter("", true, nil)
+	markdown, err := converter.ConvertString(html)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return markdown
 }

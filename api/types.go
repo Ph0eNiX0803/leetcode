@@ -196,3 +196,19 @@ type QuestionTodayResponse struct {
 type Data struct {
 	Data QuestionTodayResponse `json:"data"`
 }
+
+const QuestionDetail = `query questionTranslations($titleSlug: String!) {
+  question(titleSlug: $titleSlug) {
+    translatedTitle
+    translatedContent
+  }
+}`
+
+type Question struct {
+	TranslatedTitle   string `json:"translatedTitle"`
+	TranslatedContent string `json:"translatedContent"`
+}
+
+type DataDetail struct {
+	Question Question `json:"question"`
+}
