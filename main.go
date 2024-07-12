@@ -61,7 +61,7 @@ Options:
 const msgTemplate = `每日一题(%s)
 Title: %s
 Difficulty: %s
-AcRate: %s
+AcRate: %.2f
 Tags: %s
 Link: %s
 LinkCN: %s`
@@ -69,7 +69,7 @@ LinkCN: %s`
 const TopTwo200 = `热门题目第 %s 道
 Title: %s
 Difficulty: %s
-AcRate: %s
+AcRate: %.2f
 Tags: %s
 Link: %s
 LinkCN: %s`
