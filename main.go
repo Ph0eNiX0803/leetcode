@@ -40,11 +40,13 @@ import (
 var (
 	wecom string // wecom 通知链接
 	help  bool   // 帮助
+	total int
 )
 
 func init() {
 	flag.StringVar(&wecom, "wecom", "", "wecom webhook token")
 	flag.BoolVar(&help, "h", false, "帮助")
+	flag.IntVar(&total, "total", 200, "total")
 	flag.Usage = usage
 }
 
@@ -59,6 +61,15 @@ Options:
 const msgTemplate = `每日一题(%s)
 Title: %s
 Difficulty: %s
+AcRate: %s
+Tags: %s
+Link: %s
+LinkCN: %s`
+
+const TopTwo200 = `热门题目第 %s 道
+Title: %s
+Difficulty: %s
+AcRate: %s
 Tags: %s
 Link: %s
 LinkCN: %s`
@@ -79,28 +90,29 @@ func main() {
 	qs := []api.QuestionLightNode{}
 	batchSize := 100
 	for i := 0; i < 200; i += batchSize {
-		respAll, err := api.GetALLQuestionsV2(fmt.Sprint(i), fmt.Sprint(batchSize))
+		respAll, err := api.GetALLQuestions(i, batchSize)
 		if err != nil {
 			log.Printf("api.GetALLQuestionsV2 %v\n", err)
 			return
 		}
-		qs = append(qs, respAll.Data.P.Questions...)
+		qs = append(qs, respAll.P.Questions...)
 	}
-
+	filter := filterPaid(qs)
 	if len(resp.TodayRecord) <= 0 {
 		log.Printf("todayRecord 长度为 0,请检查\n")
 		return
 	}
-	if len(qs) <= 0 {
-		log.Printf("todayRecord 长度为 0,请检查\n")
+	if len(filter) <= 0 {
+		log.Printf("filter 长度为 0,请检查\n")
 		return
 	}
+	fmt.Println(filter)
 
 	today := resp.TodayRecord[0]
 	date := today.Date
 	for i := 0; i < 3; i++ {
-		index := rand.Uint32() % 200
-		q := qs[index]
+		index := rand.Uint32() % uint32(len(filter))
+		q := filter[index]
 		diff := q.Difficulty
 		title := q.TitleCn
 		link := fmt.Sprintf("%s/problems/%s", api.Leetcode, q.TitleSlug)
@@ -110,7 +122,7 @@ func main() {
 			tags = append(tags, fmt.Sprintf("%s(%s)", tag.NameTranslated, tag.Name))
 		}
 		tagsValue := strings.Join(tags, "、")
-		content := fmt.Sprintf(msgTemplate, date, title, diff, tagsValue, link, linkCn)
+		content := fmt.Sprintf(TopTwo200, q.FrontendQuestionId, title, diff, q.AcRate, tagsValue, link, linkCn)
 
 		log.Println(content)
 
@@ -130,13 +142,25 @@ func main() {
 	link := fmt.Sprintf("%s/problems/%s", api.Leetcode, today.Question.TitleSlug)
 	linkCn := fmt.Sprintf("%s/problems/%s", api.LeetcodeCn, today.Question.TitleSlug)
 
-	content := fmt.Sprintf(msgTemplate, date, title, difficulty, tagsValue, link, linkCn)
+	content := fmt.Sprintf(msgTemplate, date, title, difficulty, today.Question.AcRate, tagsValue, link, linkCn)
 
 	log.Println(content)
 
 	if wecom != "" {
 		w := msgpush.NewWeCom(wecom)
 		_ = w.SendText(content, []string{"bin.zhang"})
+	}
+
+	return
+}
+
+func filterPaid(in []api.QuestionLightNode) (out []api.QuestionLightNode) {
+	out = make([]api.QuestionLightNode, 0)
+	for _, q := range in {
+		if q.PaidOnly {
+			continue
+		}
+		out = append(out, q)
 	}
 
 	return
