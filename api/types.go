@@ -194,5 +194,5 @@ type QuestionTodayResponse struct {
 }
 
 type Data struct {
-	Data QuestionTodayResponse `json:"data""`
+	Data QuestionTodayResponse `json:"data"`
 }
