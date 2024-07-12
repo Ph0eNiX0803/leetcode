@@ -1,6 +1,6 @@
 module leetcode-question-today
 
-go 1.16
+go 1.21
 
 require (
 	github.com/cloud-org/msgpush v0.0.3

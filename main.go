@@ -90,8 +90,8 @@ func main() {
 	}
 	qs := []api.QuestionLightNode{}
 	batchSize := 100
-	for i := 0; i < 200; i += batchSize {
-		respAll, err := api.GetALLQuestions(i, batchSize)
+	for i := 0; i < total; i += batchSize {
+		respAll, err := api.GetALLQuestions(i, min(i+batchSize, total))
 		if err != nil {
 			log.Printf("api.GetALLQuestionsV2 %v\n", err)
 			return

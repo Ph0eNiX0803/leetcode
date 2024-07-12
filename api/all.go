@@ -20,7 +20,7 @@ func GetALLQuestions(offset, length int) (*QuestionTodayResponse, error) {
 	req.Var("categorySlug", "all-code-essentials")
 	req.Var("limit", length)
 	req.Var("skip", offset)
-	//req.Var("$filters", "{}")
+	req.Var("$filters", "{}")
 
 	// set header fields
 	req.Header.Set("Cache-Control", "no-cache")
