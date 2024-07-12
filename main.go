@@ -107,7 +107,7 @@ func main() {
 		log.Printf("filter 长度为 0,请检查\n")
 		return
 	}
-	fmt.Println(filter)
+	// fmt.Println(filter)
 
 	today := resp.TodayRecord[0]
 	date := today.Date
